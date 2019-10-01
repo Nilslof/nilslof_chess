@@ -16,6 +16,8 @@ const size: f32 = 400.0;
 struct MainState {
     pos_x: f32,
     game: Game,
+    pressed_pos: Option<GridPosition>
+
 }
 
 impl MainState {
@@ -24,6 +26,7 @@ impl MainState {
         let s = MainState {
             pos_x: 0.0,
             game: g,
+            pressed_pos: Option::None,
         };
 
         Ok(s)
@@ -113,6 +116,34 @@ impl MainState {
         graphics::present(ctx)?;
         Ok(())
     }
+
+    fn draw_possible_moves(&mut self, ctx: &mut Context) -> GameResult {
+        let pos = self.pressed_pos.unwrap();
+        let possible_moves = self.game.get_allowed_moves(pos.x as usize, pos.y as usize);
+
+        let mut color = graphics::BLACK;
+
+        for possible_move in possible_moves {
+
+            let rectangle = graphics::Mesh::new_rectangle(
+                ctx,
+                graphics::DrawMode::fill(),
+                graphics::Rect::new(
+                    ((possible_move.1 as f32) * size / 8.0) + (size/24.0),
+                    ((possible_move.2 as f32) * size / 8.0) + (size/24.0),
+                    size / 32.0,
+                    size / 32.0,
+                ),
+                color,
+            )?;
+
+            graphics::draw(ctx, &rectangle, (na::Point2::new(self.pos_x, 0.0), ))?;
+        }
+
+        graphics::present(ctx)?;
+        Ok(())
+    }
+
 }
 
 impl event::EventHandler for MainState {
@@ -122,18 +153,54 @@ impl event::EventHandler for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         self.draw_board(ctx);
+        if self.pressed_pos.is_some(){
+            self.draw_possible_moves(ctx);
+        }
         Ok(())
     }
 
-    
+    fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, _x: f32, _y: f32,) {
+        let pos = GridPosition::new_from_pixel(_x, _y);
+
+        if self.pressed_pos.is_none(){
+            self.pressed_pos = Option::Some(pos);
+        }
+        else{
+            let possible_moves = self.game.get_allowed_moves(self.pressed_pos.unwrap().x as usize, self.pressed_pos.unwrap().y as usize);
+
+            for pos_move in possible_moves{
+                if pos_move.1 == pos.x as usize && pos_move.2 == pos.y as usize{
+                    self.game.move_piece(
+                        pos_move.0,
+                        self.pressed_pos.unwrap().x as usize,
+                        self.pressed_pos.unwrap().y as usize,
+                        pos.x as usize,
+                        pos.y as usize
+                    );
+
+                }
+            }
+            self.pressed_pos = Option::None;
+        }
+
+
+
+    }
+
+    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, _x: f32, _y: f32,) {
+        let pos = GridPosition::new_from_pixel(_x, _y);
+        //println!("{:?} Button released at {} {}", _button, pos.x, pos.y );
+    }
+
+
 
 
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 struct GridPosition {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl GridPosition {
@@ -141,6 +208,13 @@ impl GridPosition {
         GridPosition {
             x: x as i32,
             y: y as i32,
+        }
+    }
+
+    fn new_from_pixel(_x: f32, _y: f32) -> GridPosition {
+        GridPosition {
+            x: (_x as i32*8)/size as i32,
+            y: (_y as i32*8)/size as i32,
         }
     }
 }
@@ -154,6 +228,7 @@ impl From<GridPosition> for graphics::Rect {
              size as i32/8 as i32,
         )
     }
+
 }
 
 impl From<GridPosition> for ggez::mint::Point2<f32> {
