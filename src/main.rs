@@ -119,6 +119,7 @@ impl MainState {
 
     fn draw_possible_moves(&mut self, ctx: &mut Context) -> GameResult {
         let pos = self.pressed_pos.unwrap();
+
         let possible_moves = self.game.get_allowed_moves(pos.x as usize, pos.y as usize);
 
         let mut color = graphics::BLACK;
@@ -163,7 +164,9 @@ impl event::EventHandler for MainState {
         let pos = GridPosition::new_from_pixel(_x, _y);
 
         if self.pressed_pos.is_none(){
-            self.pressed_pos = Option::Some(pos);
+            if self.game.board[pos.x as usize][pos.y as usize].is_some() {
+                self.pressed_pos = Option::Some(pos);
+            }
         }
         else{
             let possible_moves = self.game.get_allowed_moves(self.pressed_pos.unwrap().x as usize, self.pressed_pos.unwrap().y as usize);
