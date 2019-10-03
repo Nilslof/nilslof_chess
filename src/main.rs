@@ -1,9 +1,10 @@
 use std::{env, path};
-use nilslof_chess_engine;
-use nilslof_chess_engine::{PieceType, Game, Colour, MoveType};
 
 mod network;
 use network::*;
+mod enigne;
+use enigne::*;
+
 
 use ggez::{Context, event, GameResult, graphics};
 use ggez::conf::{WindowMode, WindowSetup};
