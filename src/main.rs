@@ -1,7 +1,10 @@
 use std::{env, path};
-
 use nilslof_chess_engine;
 use nilslof_chess_engine::{PieceType, Game, Colour, MoveType};
+
+mod network;
+use network::*;
+
 use ggez::{Context, event, GameResult, graphics};
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::conf::NumSamples;
@@ -9,15 +12,49 @@ use ggez::event::MouseButton;
 use ggez::graphics::DrawParam;
 use ggez::nalgebra as na;
 use ggez::nalgebra::Point2;
+use std::ops::Deref;
 
 
 const size: f32 = 400.0;
 
+struct DataHandler {
+    //board: board,
+    //game_state: GameState,
+    move_made: bool,
+}
+
+
+/*
+connection between GUI and network
+*/
+impl DataHandler {
+    fn new() -> Self {
+        DataHandler {
+            //board,
+           // game_state: GameState::Normal,
+            move_made: false,
+        }
+    }
+
+    fn update_game_state(&mut self) {
+       // self.gameover = self.board.get_game_state();
+    }
+
+    fn take_move<T: Deref<Target=NetworkHandler>>(&mut self) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn receive_move(&mut self) -> Result<(), String> {
+        Ok(())
+    }
+}
+
+
 struct MainState {
     pos_x: f32,
     game: Game,
-    pressed_pos: Option<GridPosition>
-
+    pressed_pos: Option<GridPosition>,
+    handler: NetworkHandler,
 }
 
 impl MainState {
@@ -27,6 +64,7 @@ impl MainState {
             pos_x: 0.0,
             game: g,
             pressed_pos: Option::None,
+            handler: NetworkHandler::new(),
         };
 
         Ok(s)
@@ -135,7 +173,9 @@ impl MainState {
                     size / 32.0,
                     size / 32.0,
                 ),
+
                 color,
+
             )?;
 
             graphics::draw(ctx, &rectangle, (na::Point2::new(self.pos_x, 0.0), ))?;
