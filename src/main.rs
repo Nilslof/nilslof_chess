@@ -72,14 +72,32 @@ impl MainState {
 
     fn draw_board(&mut self, ctx: &mut Context) -> GameResult{
         graphics::clear(ctx, [0.1, 0.2, 0.3, 1.0].into());
+        let mut possible_moves= Vec::new();
+        let pos;
+
+        if self.pressed_pos.is_some(){
+            pos = self.pressed_pos.unwrap();
+            possible_moves = self.game.get_allowed_moves(pos.x as usize, pos.y as usize);
+        }
+
 
         for y in 0..8 {
             for x in 0..8 {
                 let mut color = graphics::WHITE;
 
+
+
+
                 if (x + y) % 2 == 0 {
-                    color = graphics::Color::from_rgb(200, 100, 100);
+                    color = graphics::Color::from_rgb(150, 150, 150);
                 }
+
+                for i in &possible_moves{
+                    if i.1 == x && i.2 == y{
+                        color = graphics::Color::from_rgb(200, 50, 50);
+                    }
+                }
+
 
                 let rectangle = graphics::Mesh::new_rectangle(
                     ctx,
@@ -154,36 +172,6 @@ impl MainState {
         Ok(())
     }
 
-    fn draw_possible_moves(&mut self, ctx: &mut Context) -> GameResult {
-        let pos = self.pressed_pos.unwrap();
-
-        let possible_moves = self.game.get_allowed_moves(pos.x as usize, pos.y as usize);
-
-        let mut color = graphics::BLACK;
-
-        for possible_move in possible_moves {
-
-            let rectangle = graphics::Mesh::new_rectangle(
-                ctx,
-                graphics::DrawMode::fill(),
-                graphics::Rect::new(
-                    ((possible_move.1 as f32) * size / 8.0) + (size/24.0),
-                    ((possible_move.2 as f32) * size / 8.0) + (size/24.0),
-                    size / 32.0,
-                    size / 32.0,
-                ),
-
-                color,
-
-            )?;
-
-            graphics::draw(ctx, &rectangle, (na::Point2::new(self.pos_x, 0.0), ))?;
-        }
-
-        graphics::present(ctx)?;
-        Ok(())
-    }
-
 }
 
 impl event::EventHandler for MainState {
@@ -193,9 +181,6 @@ impl event::EventHandler for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         self.draw_board(ctx);
-        if self.pressed_pos.is_some(){
-            self.draw_possible_moves(ctx);
-        }
         Ok(())
     }
 
