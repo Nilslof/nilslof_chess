@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 ggez = "0.5"
+nilslof_chess_engine = {path = "engine"}
 rouille = "3.0.0"
 reqwest = "0.9.20"
 regex = "1"

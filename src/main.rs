@@ -2,9 +2,6 @@ use std::{env, path};
 
 mod network;
 use network::*;
-mod enigne;
-use enigne::*;
-
 
 use ggez::{Context, event, GameResult, graphics};
 use ggez::conf::{WindowMode, WindowSetup};
@@ -14,6 +11,7 @@ use ggez::graphics::DrawParam;
 use ggez::nalgebra as na;
 use ggez::nalgebra::Point2;
 use std::ops::Deref;
+use nilslof_chess_engine::{PieceType, Colour, Game};
 
 
 const size: f32 = 400.0;
